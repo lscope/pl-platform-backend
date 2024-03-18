@@ -2,15 +2,15 @@
 // -> https://code.visualstudio.com/docs/devcontainers/create-dev-container
 // -> https://containers.dev/implementors/json_reference/
 {
-    "name": "Python dev setup container",
+    "name": "PL-platform backend container",
     "image": "mcr.microsoft.com/devcontainers/python:0-3.11",
     // -> https://containers.dev/features
     "features": {
         "ghcr.io/devcontainers/features/docker-in-docker:2": {},
         "ghcr.io/akhildevelops/devcontainer-features/pip:0": {},
-        "ghcr.io/devcontainers/features/git:1": {},
-        "ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {}
+        "ghcr.io/devcontainers/features/git:1": {}
     },
+    "forwardPorts": [5000],
     "postCreateCommand": "bash ./cli/init.sh",
     "postStartCommand": "bash ./cli/start.sh",
     "customizations": {
@@ -24,7 +24,6 @@
                 "ms-toolsai.jupyter",
                 "ms-toolsai.vscode-jupyter-cell-tags",
                 "njpwerner.autodocstring",
-                "GitHub.copilot",
                 "SeyyedKhandon.tpack",
 				"ms-python.isort",
 				"ms-toolsai.jupyter-renderers",

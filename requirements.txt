@@ -1,1 +1,4 @@
 pytest-cov
+flask==3.0.2
+flask-restful==0.3.10
+Flask-SQLAlchemy==3.1.1
