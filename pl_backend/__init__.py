@@ -47,6 +47,6 @@ def create_app() -> Flask:
             raise Exception("Can't connect to DB")
 
     # Add APIs
-    api.add_resource(UserResource, "/user")
+    api.add_resource(UserResource, "/user/<int:user_id>")
 
     return app
