@@ -5,6 +5,7 @@ from sqlalchemy.exc import OperationalError
 from time import sleep
 
 from .resources.user import UserResource
+from .resources.lift import LiftResource
 from .models import db
 from .models.lifts import (
     Squat,
@@ -48,5 +49,6 @@ def create_app() -> Flask:
 
     # Add APIs
     api.add_resource(UserResource, "/user/<int:user_id>")
+    api.add_resource(LiftResource, "/lift/<int:user_id>/<string:lift_type>")
 
     return app
