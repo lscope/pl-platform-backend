@@ -10,7 +10,7 @@
         "ghcr.io/akhildevelops/devcontainer-features/pip:0": {},
         "ghcr.io/devcontainers/features/git:1": {}
     },
-    "forwardPorts": [5000],
+    "forwardPorts": [5001],
     "postCreateCommand": "bash ./cli/init.sh",
     "postStartCommand": "bash ./cli/start.sh",
     "customizations": {
