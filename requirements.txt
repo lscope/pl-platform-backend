@@ -3,3 +3,4 @@ flask==3.0.2
 flask-restful==0.3.10
 Flask-SQLAlchemy==3.1.1
 psycopg2==2.9.9
+flask-swagger-ui==4.11.1
