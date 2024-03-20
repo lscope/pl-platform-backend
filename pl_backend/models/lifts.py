@@ -11,6 +11,14 @@ class Lift(db.Model):
     weight: Mapped[float] = mapped_column(nullable=False)
     registered_dt: Mapped[date] = mapped_column(default=date.today())
 
+    def to_json(self):
+        return {
+            "id": self.id,
+            "userId": self.user_id,
+            "weight": self.weight,
+            "registeredDt": self.registered_dt.strftime("%Y-%m-%d"),
+        }
+
 class Squat(Lift):
     pass
 

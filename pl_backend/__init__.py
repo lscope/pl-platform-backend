@@ -74,7 +74,8 @@ def create_app() -> Flask:
             raise Exception("Can't connect to DB")
 
     # Add APIs
-    api.add_resource(UserResource, "/user/<int:user_id>")
-    api.add_resource(LiftResource, "/lift/<int:user_id>/<string:lift_type>")
+    api.add_resource(UserResource, "/user/<int:user_id>") # Questa rout serve per le chiamate GET e DELETE che richiedono <user_id>
+    api.add_resource(UserResource, "/add_user", endpoint="add_user") # Questa rout è per le chiamate POST, che non vogliono lo <user_id>
+    api.add_resource(LiftResource, "/lift/<int:user_id>")
 
     return app
