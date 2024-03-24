@@ -1,23 +1,19 @@
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import Column, Integer, String, Date, ForeignKey, Float
+from sqlalchemy.orm import relationship
 from datetime import date
-from . import db
+from . import Base
 
 
 
-class Lift(db.Model):
-    id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[str] = mapped_column(ForeignKey('user.id'), nullable=False)
-    weight: Mapped[float] = mapped_column(nullable=False)
-    registered_dt: Mapped[date] = mapped_column(default=date.today())
+class Lift(Base):
+    __tablename__ = "lifts"
 
-    def to_json(self):
-        return {
-            "id": self.id,
-            "userId": self.user_id,
-            "weight": self.weight,
-            "registeredDt": self.registered_dt.strftime("%Y-%m-%d"),
-        }
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    weight = Column(Float, nullable=False)
+    registered_dt = Column(Date, default=date.today())
+
+    owner = relationship("User", back_populates="lifts")
 
 class Squat(Lift):
     pass

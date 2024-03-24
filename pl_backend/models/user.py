@@ -1,20 +1,17 @@
-from sqlalchemy.orm import Mapped, mapped_column
-from datetime import date
-from . import db
+from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy.orm import relationship
+from datetime import datetime
+from . import Base
 
 
 
 
-class User(db.Model):
-    id: Mapped[int] = mapped_column(primary_key=True)
-    first_name: Mapped[str] = mapped_column(nullable=False)
-    last_name: Mapped[str] = mapped_column(nullable=False)
-    register_dt: Mapped[date] = mapped_column(default=date.today())
+class User(Base):
+    __tablename__ = "users"
 
-    def to_json(self):
-        return {
-            "id": self.id,
-            "firstName": self.first_name,
-            "lastName": self.last_name,
-            "registerDt": self.register_dt.strftime("%Y-%m-%d"),
-        }
+    id = Column(Integer, primary_key=True)
+    first_name = Column(String, nullable=False)
+    last_name = Column(String, nullable=False)
+    register_dt = Column(DateTime, default=datetime.now())
+
+    lift = relationship("Lift", back_populates="owner")
