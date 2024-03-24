@@ -1,2 +1,2 @@
 # python-dev-template
-Template for python repos
+The backend API for app `PL Platform`.
