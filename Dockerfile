@@ -45,4 +45,4 @@ USER appuser
 COPY . .
 
 # Run the application.
-CMD ["uvicorn", "pl_backend.main:app", "--reload"]
+CMD uvicorn pl_backend.main:app --host 0.0.0.0
