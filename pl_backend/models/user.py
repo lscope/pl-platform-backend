@@ -13,5 +13,3 @@ class User(Base):
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
     register_dt = Column(DateTime, default=datetime.now())
-
-    lift = relationship("Lift", back_populates="owner")

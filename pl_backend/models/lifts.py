@@ -13,8 +13,6 @@ class Lift(Base):
     weight = Column(Float, nullable=False)
     registered_dt = Column(Date, default=date.today())
 
-    owner = relationship("User", back_populates="lifts")
-
 class Squat(Lift):
     pass
 

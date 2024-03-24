@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 
 from ..dependencies import get_db
-
+from ..models.user import User
 
 
 
@@ -11,9 +11,12 @@ router = APIRouter(
     prefix="/users",
 )
 
-class User(BaseModel):
+class UserModel(BaseModel):
     first_name: str = Field(alias="firstName")
     last_name: str = Field(alias="lastName")
+
+    class Config:
+        allow_population_by_field_name = True
 
 
 @router.get("/{user_id}")
@@ -32,7 +35,7 @@ def get_users(db: Session = Depends(get_db)):
     return users
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def create_user(user: User, db: Session = Depends(get_db)): # FastAPI in automatico fa i controlli con Pydantic visto che abbiamo utilizzato una classe per definire come devono essere i dati passati al body della richiesta, e restituisce in automatico i messaggi di errore se qualcosa non rispetta lo standard
+def create_user(user: UserModel, db: Session = Depends(get_db)): # FastAPI in automatico fa i controlli con Pydantic visto che abbiamo utilizzato una classe per definire come devono essere i dati passati al body della richiesta, e restituisce in automatico i messaggi di errore se qualcosa non rispetta lo standard
     new_user = User(**user.model_dump())
 
     db.add(new_user)

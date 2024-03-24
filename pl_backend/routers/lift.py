@@ -44,9 +44,12 @@ router = APIRouter(
 #         validate=validate.OneOf([PR, LAST, ALL])
 #     )
 
-class Lift(BaseModel):
+class LiftModel(BaseModel):
     weight: float
     lift_type: Literal[SQUAT, BENCH, DEADLIFT] = Field(alias="liftType")
+
+    class Config:
+        allow_population_by_field_name = True
 
 
 @router.get("/squats")
