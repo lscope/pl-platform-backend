@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 
 from .models import Base
-from .models.lifts import (
+from .models.lift import (
     Squat,
     Bench,
     Deadlift,
@@ -10,8 +10,9 @@ from .models.lifts import (
 from .models.user import User
 from .models import engine
 from .routers import (
-    user,
-    lift,
+    lifts,
+    users,
+    auth,
 )
 
 
@@ -21,5 +22,6 @@ from .routers import (
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-app.include_router(user.router)
-app.include_router(lift.router)
+app.include_router(users.router)
+app.include_router(lifts.router)
+app.include_router(auth.router)

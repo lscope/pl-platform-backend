@@ -5,8 +5,8 @@ from . import Base
 
 
 
-class Lift(Base):
-    __tablename__ = "lifts"
+class Lift(Base): # Obbligatorio che la classe estenda Base
+    __tablename__ = "lifts" # Questo il nome effettivo della tabella nel DB
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
