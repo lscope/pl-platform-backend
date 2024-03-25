@@ -1,12 +1,12 @@
 from fastapi import APIRouter, HTTPException, status, Response, Depends
 from sqlalchemy.orm import Session
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from typing import List
 
 from ..dependencies import get_db
 from ..models.user import User
-
+from ..utils import hash_pwd
 
 
 router = APIRouter(
@@ -15,16 +15,12 @@ router = APIRouter(
 )
 
 class UserModel(BaseModel):
-    first_name: str = Field(alias="firstName")
-    last_name: str = Field(alias="lastName")
-
-    class Config:
-        allow_population_by_field_name = True
+    email: EmailStr # Il tipo EmailStr controlla in automatico se è una email valida
+    password: str
 
 class UserResponse(BaseModel):
     id: int
-    first_name: str
-    last_name: str
+    email: EmailStr
     register_dt: datetime
 
     class Config:
@@ -48,6 +44,10 @@ def get_users(db: Session = Depends(get_db)):
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=UserResponse)
 def create_user(user: UserModel, db: Session = Depends(get_db)): # FastAPI in automatico fa i controlli con Pydantic visto che abbiamo utilizzato una classe per definire come devono essere i dati passati al body della richiesta, e restituisce in automatico i messaggi di errore se qualcosa non rispetta lo standard
+    # Nel DB non salviamo la pwd in chiaro, come ci è stata passata, ma la hashamo. Il vantaggio è che l'hash è in una sola direzione. Quindi una volta che la password è stata hashata non possiamo più recuperare il valore orginale. Per fare il check quindi se la pw è corretta in fase di login andare a vedere il codice che gestisce il login
+    hashed_password = hash_pwd(user.password)
+    user.password = hashed_password
+
     new_user = User(**user.model_dump())
 
     db.add(new_user)
@@ -66,4 +66,4 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     db.delete(user)
     db.commit()
 
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return Response(status_code=status.HTTP_204_NO_CONTENT) # Per la delete non si restituisce niente, solo lo status code 204 per indicare che è andato tutto bene e i dati sono stati cancellati
