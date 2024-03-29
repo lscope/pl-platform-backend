@@ -7,6 +7,7 @@ from typing import List
 from ..dependencies import get_db
 from ..models.user import User
 from ..utils import hash_pwd
+from ..oauth2 import get_current_user
 
 
 router = APIRouter(
@@ -57,7 +58,7 @@ def create_user(user: UserModel, db: Session = Depends(get_db)): # FastAPI in au
     return new_user
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_user(user_id: int, db: Session = Depends(get_db)):
+def delete_user(user_id: int, db: Session = Depends(get_db), user_token = Depends(get_current_user)):
     user = db.query(User).filter(User.id == user_id).first()
 
     if user is None:
