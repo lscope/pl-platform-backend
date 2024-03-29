@@ -51,35 +51,17 @@ class LiftResponse(BaseModel):
         from_orm = True
 
 
-@router.get("/squats", response_model=List[LiftResponse]) # Specifichiamo il modello pydantic da usare per la response
-def get_squats(db: Session = Depends(get_db), user_token = Depends(get_current_user)): # Ogni richiesta che deve lavorare con il db deve avere questo parametro in input, che di fatto recupera l'istanza del db per poterci lavorare, e quando la funzione termina l'istanza del db viene chiusa
-    lifts = db.query(Squat).all()
-
-    return lifts # Questo oggetto verrà parsato dal modello della response
-
 @router.get("/squats/{user_id}", response_model=List[LiftResponse]) # Nell'endpoint della richiesta è specificato il PATH_PARAMETER user_id, che possiamo utilizzare all'interno della nostra funzione, richiamandolo tra i parametri. Nell'endpoint tutto è considerato stringa, anche i numeri, quindi per convertirlo in automatico basta utilizzare il type hinting all'interno dei parametri della funzione, e FastAPI automaticamente tenta di fare la conversione, così poi all'interno della funzione possiamo utilizzarlo già nel tipo corretto
 def get_user_squats(user_id: int, db: Session = Depends(get_db), user_token = Depends(get_current_user)):
     lifts = db.query(Squat).filter(Squat.user_id == user_id).all()
 
     return lifts
 
-@router.get("/benches", response_model=List[LiftResponse])
-def get_benches(db: Session = Depends(get_db), user_token = Depends(get_current_user)):
-    lifts = db.query(Bench).all()
-
-    return lifts
-
-@router.get("/benches/{user_id}", response_model=List[LiftResponse])
-def get_user_benches(user_id: int, db: Session = Depends(get_db), user_token = Depends(get_current_user)):
+@router.get("/benches/{user_id}", response_model=List[LiftResponse]) # Specifichiamo il modello pydantic da usare per la response
+def get_user_benches(user_id: int, db: Session = Depends(get_db), user_token = Depends(get_current_user)): # Ogni richiesta che deve lavorare con il db deve avere il parametro db in input così valorizzato, che di fatto recupera l'istanza del db per poterci lavorare, e quando la funzione termina l'istanza del db viene chiusa
     lifts = db.query(Bench).filter(Bench.user_id == user_id).all()
 
-    return lifts
-
-@router.get("/deadlifts", response_model=List[LiftResponse])
-def get_deadlifts(db: Session = Depends(get_db), user_token = Depends(get_current_user)):
-    lifts = db.query(Deadlift).all()
-
-    return lifts
+    return lifts # Questo oggetto verrà parsato dal modello della response
 
 @router.get("/deadlifts/{user_id}", response_model=List[LiftResponse])
 def get_user_deadlifts(user_id: int, db: Session = Depends(get_db), user_token = Depends(get_current_user)):
