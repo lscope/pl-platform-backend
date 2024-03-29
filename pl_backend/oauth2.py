@@ -11,7 +11,7 @@ oaut2_scheme = OAuth2PasswordBearer("login") # Il parametro deve essere l'endpoi
 
 SECRET_KEY = getenv("SECRET_KEY")
 ALGORITHM = getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
 
 class TokenModel(BaseModel):
