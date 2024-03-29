@@ -50,6 +50,11 @@ class LiftResponse(BaseModel):
     class Config:
         from_orm = True
 
+class UserLiftsResponse(BaseModel):
+    squat: List[LiftResponse]
+    bench: List[LiftResponse]
+    deadlift: List[LiftResponse]
+
 
 @router.get("/squats/{user_id}", response_model=List[LiftResponse]) # Nell'endpoint della richiesta è specificato il PATH_PARAMETER user_id, che possiamo utilizzare all'interno della nostra funzione, richiamandolo tra i parametri. Nell'endpoint tutto è considerato stringa, anche i numeri, quindi per convertirlo in automatico basta utilizzare il type hinting all'interno dei parametri della funzione, e FastAPI automaticamente tenta di fare la conversione, così poi all'interno della funzione possiamo utilizzarlo già nel tipo corretto
 def get_user_squats(user_id: int, db: Session = Depends(get_db), user_token = Depends(get_current_user)):
@@ -69,17 +74,18 @@ def get_user_deadlifts(user_id: int, db: Session = Depends(get_db), user_token =
 
     return lifts
 
-@router.get("/{user_id}", response_model=List[LiftResponse])
+@router.get("/{user_id}", response_model=UserLiftsResponse)
 def get_user_lifts(user_id: int, db: Session = Depends(get_db), user_token = Depends(get_current_user)):
-    squats = get_user_squats(user_id=user_id)
-    benches = get_user_benches(user_id=user_id)
-    deadlifts = get_user_deadlifts(user_id=user_id)
+    # Get all lifts
+    squats = get_user_squats(user_id=user_id, db=db, user_token=user_token)
+    benches = get_user_benches(user_id=user_id, db=db, user_token=user_token)
+    deadlifts = get_user_deadlifts(user_id=user_id, db=db, user_token=user_token)
 
-    print(squats)
-    print(benches)
-    print(deadlifts)
-
-    return {}
+    return {
+        SQUAT: squats,
+        BENCH: benches,
+        DEADLIFT: deadlifts
+    }
 
 @router.post("/{user_id}", status_code=status.HTTP_201_CREATED, response_model=LiftResponse) # Abbiamo già impostato lo status code qualora andasse tutto bene. Questo è buona pratica, soprattutto quando è necessario utilizzare status code precisi. In questo caso abbiamo una chiamata POST, quindi che deve creare qualcosa. Se quel qualcosa è stato creato correttamente è bene specificarlo con lo status code 201
 def create_lift(user_id: int, lift: LiftModel, db: Session = Depends(get_db), user_token = Depends(get_current_user)): # Una chiamata POST avrà un body con i campi necessari. Per accedervi, FastAPI permette semplicemente di inserire il parametro (del nome che vogliamo - nel nostro caso `lift: LiftModel`) nella definizione della funzione, e specificando il modello pydantic ci viene già parsato con tutti i check, e siamo pronti ad utilizzarlo nella nostra funzione
