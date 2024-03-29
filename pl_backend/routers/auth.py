@@ -24,9 +24,8 @@ def login_user(user_credentials: OAuth2PasswordRequestForm = Depends(), db: Sess
 
     # Se l'utente è stato trovato, verifichiamo che la password sia corretta
     # Per verificare che la pw sia corretta, dal momento che l'abbiamo hashata sul db non possiamo più recuperare quella originale, quindi per verificarlo seguiamo questi step:
-    #   1) hashamo la password che ci hanno fornito in fase di login (chiamata anche `tentative password`)
-    #   2) confrontiamo la password hashata a db con la password hashata al punto 1
-    if not verify_pwd(hash_pwd(user_credentials.password), user.password):
+    #   1) confrontiamo la password hashata a db con la password inserita nel form di login (questa pw deve essere così come ci è stata passata, ci penserà la libreria sotto a confrontarla con quella hashata)
+    if not verify_pwd(user_credentials.password, user.password):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials") # Anche qui non diamo indicazione sul fatto che è la password ad essere sbagliata
 
     # Generazione JWT token
