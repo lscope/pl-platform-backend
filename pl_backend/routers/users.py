@@ -58,11 +58,15 @@ def create_user(user: UserModel, db: Session = Depends(get_db)): # FastAPI in au
     return new_user
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_user(user_id: int, db: Session = Depends(get_db), user_token = Depends(get_current_user)):
+def delete_user(user_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     user = db.query(User).filter(User.id == user_id).first()
 
     if user is None:
         raise HTTPException(detail="User not found", status_code=status.HTTP_404_NOT_FOUND)
+
+    # Verifichiamo che l'utente che si sta cercando di cancellare è lo stesso utente della sessione attiva
+    if user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to perform requested action")
 
     db.delete(user)
     db.commit()
