@@ -1,5 +1,5 @@
 from datetime import date
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, status, Depends, Response, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from pydantic import BaseModel, Field
@@ -97,3 +97,42 @@ def create_lift(
     db.refresh(new_lift) # Nelle richieste post si restituisce sempre l'oggetto creato (ovviamente togliendo eventuali dati sensibili). Una volta che l'abbiamo creato a DB, facendo un refresh otteniamo il nuovo oggetto creato e possiamo restituirlo
 
     return new_lift
+
+@router.delete("/{lift_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_lift(
+    lift_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    lift = db.query(Lift).filter(Lift.id == lift_id).first()
+
+    if lift is not None:
+        check_user(lift.id, current_user) # Se l'alzata esiste, allora controllo che appartenga all'utente corrente
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lift not found")
+
+    db.delete(lift)
+    db.commit()
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+@router.put("/{lift_id}", response_model=LiftResponse)
+def update_lift(
+    lift_id: int,
+    lift_infos: LiftModel,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    lift_query = db.query(Lift).filter(Lift.id == lift_id)
+    lift = lift_query.first()
+
+    if lift is not None:
+        check_user(lift.id, current_user) # Se l'alzata esiste, allora controllo che appartenga all'utente corrente
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lift not found")
+
+    # Update del peso
+    lift_query.update(lift_infos.model_dump(), synchronize_session="fetch")
+    db.commit()
+
+    return lift_query.first() # Restituiamo il peso aggiornato
