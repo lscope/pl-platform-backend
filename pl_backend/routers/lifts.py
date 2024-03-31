@@ -31,6 +31,7 @@ router = APIRouter(
 
 
 class LiftType(str, Enum):
+    # Classe che indica i valori accettati di un determinato parametro
     squat = SQUAT
     bench = BENCH
     deadlift = DEADLIFT
@@ -38,7 +39,7 @@ class LiftType(str, Enum):
 # Modello pydantic per validare i dati che ci arrivano nella request (tendenzialmente POST o PUT)
 class LiftModel(BaseModel):
     weight: float
-    lift_type: LiftType = Field(alias="liftType") # Con Literal[] indichiamo il dominio di input, con alias la chiave effettiva che ci arriva nel json del body della richiesta (così da mantenere il camelCase del json)
+    lift_type: LiftType = Field(alias="liftType") # Utilizzando il type hinting con la classe LiftType automaticamente facciamo il check con pydantic dei valori accettati di dominio
 
     # Necessario creare questa classe per poter leggere dall'alias
     class Config:
@@ -62,7 +63,8 @@ def get_user_lifts(
     user_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-    lift_type: Optional[LiftType] = None,
+    lift_type: Optional[LiftType] = None, # Con Optional[LiftType] diciamo a pydantic (che viene chiamato in automatico da FastAPI) che il parametro è opzionale (valore di default None), ma se viene passato deve utilizzare la classe LiftType per identificare i valori ammessi.
+    # Inoltre, questo è un QUERY PARAMETER, identificato automaticamente da FastAPI, e il nome del parametro all'interno dell'URL deve essere esattamente quello del parametro
 ):
     check_user(user_id, current_user)
 
@@ -77,7 +79,12 @@ def get_user_lifts(
     return lifts
 
 @router.post("/{user_id}", status_code=status.HTTP_201_CREATED, response_model=LiftResponse) # Abbiamo già impostato lo status code qualora andasse tutto bene. Questo è buona pratica, soprattutto quando è necessario utilizzare status code precisi. In questo caso abbiamo una chiamata POST, quindi che deve creare qualcosa. Se quel qualcosa è stato creato correttamente è bene specificarlo con lo status code 201
-def create_lift(user_id: int, lift: LiftModel, db: Session = Depends(get_db), current_user = Depends(get_current_user)): # Una chiamata POST avrà un body con i campi necessari. Per accedervi, FastAPI permette semplicemente di inserire il parametro (del nome che vogliamo - nel nostro caso `lift: LiftModel`) nella definizione della funzione, e specificando il modello pydantic ci viene già parsato con tutti i check, e siamo pronti ad utilizzarlo nella nostra funzione
+def create_lift(
+    user_id: int,
+    lift: LiftModel,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user),
+): # Una chiamata POST avrà un body con i campi necessari. Per accedervi, FastAPI permette semplicemente di inserire il parametro (del nome che vogliamo - nel nostro caso `lift: LiftModel`) nella definizione della funzione, e specificando il modello pydantic ci viene già parsato con tutti i check, e siamo pronti ad utilizzarlo nella nostra funzione
     check_user(user_id, current_user)
 
     new_lift = Lift(
