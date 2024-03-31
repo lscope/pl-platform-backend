@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from pydantic import BaseModel, EmailStr
 
-from ..utils import hash_pwd, verify_pwd
+from ..utils import verify_pwd
 from ..dependencies import get_db
 from ..models.user import User
 from ..oauth2 import create_access_token, TokenResponse
@@ -16,7 +15,10 @@ router = APIRouter(
 
 
 @router.post("/login", response_model=TokenResponse)
-def login_user(user_credentials: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)): # L'utilizzo di OAuth2PasswordRequestForm effettua in automatico la ricezione delle credenziali, ma in un formato standard, ossia è un dizionario con due chiavi: "username" e "password". Poi nello username viene messa la mail, però dobbiamo ricordarci che dobbiamo usare la chiave username nella query a db per verificare la mail. Inoltre, il body della richiesta non deve essere sottoforma di json ma di form-data.
+def login_user(
+    user_credentials: OAuth2PasswordRequestForm = Depends(), # L'utilizzo di OAuth2PasswordRequestForm effettua in automatico la ricezione delle credenziali, ma in un formato standard, ossia è un dizionario con due chiavi: "username" e "password". Poi nello username viene messa la mail, però dobbiamo ricordarci che dobbiamo usare la chiave username nella query a db per verificare la mail. Inoltre, il body della richiesta non deve essere sottoforma di json ma di form-data.
+    db: Session = Depends(get_db),
+):
     user = db.query(User).filter(User.email == user_credentials.username).first() # first() perché tanto non ci possono essere mail duplicate, quindi prendiamo subito la prima e non sprechiamo risorse del db
 
     if user is None:

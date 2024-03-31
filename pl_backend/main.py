@@ -2,11 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 
 from .models import Base
-from .models.lift import (
-    Squat,
-    Bench,
-    Deadlift,
-)
+from .models.lift import Lift
 from .models.user import User
 from .models import engine
 from .routers import (

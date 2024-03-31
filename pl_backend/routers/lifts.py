@@ -2,12 +2,14 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
-from typing import Literal, List
+from typing import Literal, List, Optional
 
-from ..models.lift import Squat, Bench, Deadlift
+from ..models.lift import Lift
+from ..models.user import User
 from ..dependencies import get_db
 from ..oauth2 import get_current_user
 from ..routers.users import UserResponse
+from ..utils import check_user
 
 
 SQUAT = "squat"
@@ -18,11 +20,6 @@ PR = "PR"
 LAST = "last"
 ALL = "all"
 
-LIFT_CLASSES = {
-    SQUAT: Squat,
-    BENCH: Bench,
-    DEADLIFT: Deadlift,
-}
 
 # Visto che l'applicazione è strutturata in più moduli python, in ogni router, anziché creare una nuova app FastAPI, creiamo un router dell'app, che poi andremo ad includere nel nostro main
 router = APIRouter(
@@ -52,48 +49,28 @@ class LiftResponse(BaseModel):
     class Config:
         from_orm = True
 
-class UserLiftsResponse(BaseModel):
-    squat: List[LiftResponse]
-    bench: List[LiftResponse]
-    deadlift: List[LiftResponse]
 
+@router.get("/{user_id}", response_model=List[LiftResponse]) # Nell'endpoint della richiesta è specificato il PATH_PARAMETER user_id, che possiamo utilizzare all'interno della nostra funzione, richiamandolo tra i parametri. Nell'endpoint tutto è considerato stringa, anche i numeri, quindi per convertirlo in automatico basta utilizzare il type hinting all'interno dei parametri della funzione, e FastAPI automaticamente tenta di fare la conversione, così poi all'interno della funzione possiamo utilizzarlo già nel tipo corretto
+def get_user_lifts(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    lift_type: Optional[Literal[SQUAT, BENCH, DEADLIFT]] = None,
+):
+    check_user(user_id, current_user)
 
-@router.get("/squats/{user_id}", response_model=List[LiftResponse]) # Nell'endpoint della richiesta è specificato il PATH_PARAMETER user_id, che possiamo utilizzare all'interno della nostra funzione, richiamandolo tra i parametri. Nell'endpoint tutto è considerato stringa, anche i numeri, quindi per convertirlo in automatico basta utilizzare il type hinting all'interno dei parametri della funzione, e FastAPI automaticamente tenta di fare la conversione, così poi all'interno della funzione possiamo utilizzarlo già nel tipo corretto
-def get_user_squats(user_id: int, db: Session = Depends(get_db), user_token = Depends(get_current_user)):
-    lifts = db.query(Squat).filter(Squat.user_id == user_id).all()
-
-    return lifts
-
-@router.get("/benches/{user_id}", response_model=List[LiftResponse]) # Specifichiamo il modello pydantic da usare per la response
-def get_user_benches(user_id: int, db: Session = Depends(get_db), user_token = Depends(get_current_user)): # Ogni richiesta che deve lavorare con il db deve avere il parametro db in input così valorizzato, che di fatto recupera l'istanza del db per poterci lavorare, e quando la funzione termina l'istanza del db viene chiusa
-    lifts = db.query(Bench).filter(Bench.user_id == user_id).all()
-
-    return lifts # Questo oggetto verrà parsato dal modello della response
-
-@router.get("/deadlifts/{user_id}", response_model=List[LiftResponse])
-def get_user_deadlifts(user_id: int, db: Session = Depends(get_db), user_token = Depends(get_current_user)):
-    lifts = db.query(Deadlift).filter(Deadlift.user_id == user_id).all()
+    if lift_type is None:
+        lifts = db.query(Lift).filter(Lift.user_id == user_id).all()
+    else:
+        lifts = db.query(Lift).filter(Lift.user_id == user_id and Lift.lift_type == lift_type).all()
 
     return lifts
-
-@router.get("/{user_id}", response_model=UserLiftsResponse)
-def get_user_lifts(user_id: int, db: Session = Depends(get_db), user_token = Depends(get_current_user)):
-    # Get all lifts
-    squats = get_user_squats(user_id=user_id, db=db, user_token=user_token)
-    benches = get_user_benches(user_id=user_id, db=db, user_token=user_token)
-    deadlifts = get_user_deadlifts(user_id=user_id, db=db, user_token=user_token)
-
-    return {
-        SQUAT: squats,
-        BENCH: benches,
-        DEADLIFT: deadlifts
-    }
 
 @router.post("/{user_id}", status_code=status.HTTP_201_CREATED, response_model=LiftResponse) # Abbiamo già impostato lo status code qualora andasse tutto bene. Questo è buona pratica, soprattutto quando è necessario utilizzare status code precisi. In questo caso abbiamo una chiamata POST, quindi che deve creare qualcosa. Se quel qualcosa è stato creato correttamente è bene specificarlo con lo status code 201
-def create_lift(user_id: int, lift: LiftModel, db: Session = Depends(get_db), user_token = Depends(get_current_user)): # Una chiamata POST avrà un body con i campi necessari. Per accedervi, FastAPI permette semplicemente di inserire il parametro (del nome che vogliamo - nel nostro caso `lift: LiftModel`) nella definizione della funzione, e specificando il modello pydantic ci viene già parsato con tutti i check, e siamo pronti ad utilizzarlo nella nostra funzione
-    lift_model = LIFT_CLASSES[lift.lift_type]
+def create_lift(user_id: int, lift: LiftModel, db: Session = Depends(get_db), current_user = Depends(get_current_user)): # Una chiamata POST avrà un body con i campi necessari. Per accedervi, FastAPI permette semplicemente di inserire il parametro (del nome che vogliamo - nel nostro caso `lift: LiftModel`) nella definizione della funzione, e specificando il modello pydantic ci viene già parsato con tutti i check, e siamo pronti ad utilizzarlo nella nostra funzione
+    check_user(user_id, current_user)
 
-    new_lift = lift_model(
+    new_lift = Lift(
         user_id=user_id,
         **lift.model_dump(), # lift è un oggetto pydantic. Se vogliamo un dizionario dobbiamo usare il metodo .model_dump()
     )
