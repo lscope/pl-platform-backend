@@ -2,23 +2,23 @@ from fastapi import Depends, status, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
-from os import getenv
 from copy import deepcopy
 from datetime import datetime, timedelta, UTC
 from pydantic import BaseModel
 
 from .models.user import User
 from .dependencies import get_db
+from .config import (
+    SECRET_KEY,
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+    ALGORITHM,
+)
 
 
 
 
 
 oaut2_scheme = OAuth2PasswordBearer("login") # Il parametro deve essere l'endpoint dell'url che genererà il token. E' quello che abbiamo inserito nel login.
-
-SECRET_KEY = getenv("SECRET_KEY")
-ALGORITHM = getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
 
 class TokenModel(BaseModel):
