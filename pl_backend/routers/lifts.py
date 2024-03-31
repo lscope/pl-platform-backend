@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 from fastapi import APIRouter, status, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
@@ -49,7 +49,7 @@ class LiftResponse(BaseModel):
     id: int
     user_id: int
     weight: float
-    registered_dt: datetime
+    register_dt: date
     owner: UserResponse # Avendo aggiunto la relazione tra tabella utenti e quella dei pesi recuperiamo tutte le informazioni dell'utente a cui è assegnata l'alzata, e possiamo usare il modello pydantic che abbiamo creato per renderizzarlo in output
 
     # necessario creare questa classe per specificare che l'oggetto è un oggetto ORM (letto direttamente da DB)
