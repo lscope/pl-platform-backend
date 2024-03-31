@@ -18,10 +18,6 @@ SQUAT = "squat"
 BENCH = "bench"
 DEADLIFT = "deadlift"
 
-PR = "PR"
-LAST = "last"
-ALL = "all"
-
 
 # Visto che l'applicazione è strutturata in più moduli python, in ogni router, anziché creare una nuova app FastAPI, creiamo un router dell'app, che poi andremo ad includere nel nostro main
 router = APIRouter(
@@ -40,6 +36,7 @@ class LiftType(str, Enum):
 class LiftModel(BaseModel):
     weight: float
     lift_type: LiftType = Field(alias="liftType") # Utilizzando il type hinting con la classe LiftType automaticamente facciamo il check con pydantic dei valori accettati di dominio
+    body_weight: Optional[float] = Field(alias="bodyWeight", default=None)
 
     # Necessario creare questa classe per poter leggere dall'alias
     class Config:
@@ -50,6 +47,7 @@ class LiftResponse(BaseModel):
     id: int
     user_id: int
     weight: float
+    body_weight: float | None
     register_dt: date
     owner: UserResponse # Avendo aggiunto la relazione tra tabella utenti e quella dei pesi recuperiamo tutte le informazioni dell'utente a cui è assegnata l'alzata, e possiamo usare il modello pydantic che abbiamo creato per renderizzarlo in output
 
