@@ -57,6 +57,6 @@ def get_current_user(token: str = Depends(oaut2_scheme), db: Session = Depends(g
     credentials_exceptions = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials", headers={"WWW-Authenticate": "Bearer"}) # L'header l'ho trovato sulla documentazione di FastAPI
 
     token_data = verify_token(token, credentials_exceptions)
-    user = db.query(User).filter(User.id == token_data.id) # Filtriamo l'utente corrente e lo restituiamo
+    user = db.query(User).filter(User.id == token_data.id).first() # Filtriamo l'utente corrente e lo restituiamo
 
     return user
