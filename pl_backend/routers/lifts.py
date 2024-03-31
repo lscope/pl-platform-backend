@@ -1,8 +1,10 @@
 from datetime import datetime
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, status, Depends
 from sqlalchemy.orm import Session
+from sqlalchemy import and_
 from pydantic import BaseModel, Field
-from typing import Literal, List, Optional
+from typing import List, Optional
+from enum import Enum
 
 from ..models.lift import Lift
 from ..models.user import User
@@ -28,10 +30,15 @@ router = APIRouter(
 )
 
 
+class LiftType(str, Enum):
+    squat = SQUAT
+    bench = BENCH
+    deadlift = DEADLIFT
+
 # Modello pydantic per validare i dati che ci arrivano nella request (tendenzialmente POST o PUT)
 class LiftModel(BaseModel):
     weight: float
-    lift_type: Literal[SQUAT, BENCH, DEADLIFT] = Field(alias="liftType") # Con Literal[] indichiamo il dominio di input, con alias la chiave effettiva che ci arriva nel json del body della richiesta (così da mantenere il camelCase del json)
+    lift_type: LiftType = Field(alias="liftType") # Con Literal[] indichiamo il dominio di input, con alias la chiave effettiva che ci arriva nel json del body della richiesta (così da mantenere il camelCase del json)
 
     # Necessario creare questa classe per poter leggere dall'alias
     class Config:
@@ -55,14 +62,17 @@ def get_user_lifts(
     user_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-    lift_type: Optional[Literal[SQUAT, BENCH, DEADLIFT]] = None,
+    lift_type: Optional[LiftType] = None,
 ):
     check_user(user_id, current_user)
 
     if lift_type is None:
         lifts = db.query(Lift).filter(Lift.user_id == user_id).all()
     else:
-        lifts = db.query(Lift).filter(Lift.user_id == user_id and Lift.lift_type == lift_type).all()
+        lifts = db.query(Lift).filter(and_(
+            Lift.user_id == user_id,
+            Lift.lift_type == lift_type,
+        )).all()
 
     return lifts
 
