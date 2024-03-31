@@ -7,6 +7,7 @@ from typing import Literal, List
 from ..models.lift import Squat, Bench, Deadlift
 from ..dependencies import get_db
 from ..oauth2 import get_current_user
+from ..routers.users import UserResponse
 
 
 SQUAT = "squat"
@@ -45,6 +46,7 @@ class LiftResponse(BaseModel):
     user_id: int
     weight: float
     registered_dt: datetime
+    owner: UserResponse # Avendo aggiunto la relazione tra tabella utenti e quella dei pesi recuperiamo tutte le informazioni dell'utente a cui è assegnata l'alzata, e possiamo usare il modello pydantic che abbiamo creato per renderizzarlo in output
 
     # necessario creare questa classe per specificare che l'oggetto è un oggetto ORM (letto direttamente da DB)
     class Config:
