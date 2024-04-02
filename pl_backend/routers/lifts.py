@@ -69,12 +69,12 @@ class LiftModel(BaseModel):
 # Modello pydantic per la response. Definiamo le informazioni che vanno nel body della response
 class LiftResponse(BaseModel):
     id: int
-    user_id: int
+    user_id: int = Field(alias="userId")
     weight: float
     rpe: float | None
     notes: str | None
-    register_dt: date
-    owner: UserResponse # Avendo aggiunto la relazione tra tabella utenti e quella dei pesi recuperiamo tutte le informazioni dell'utente a cui è assegnata l'alzata, e possiamo usare il modello pydantic che abbiamo creato per renderizzarlo in output
+    register_dt: date = Field(alias="registerDt")
+    user: UserResponse # Avendo aggiunto la relazione tra tabella utenti e quella dei pesi recuperiamo tutte le informazioni dell'utente a cui è assegnata l'alzata, e possiamo usare il modello pydantic che abbiamo creato per renderizzarlo in output
 
     # necessario creare questa classe per specificare che l'oggetto è un oggetto ORM (letto direttamente da DB)
     class Config:
@@ -102,7 +102,7 @@ def get_user_lifts(
     return lifts
 
 @router.post("/{user_id}", status_code=status.HTTP_201_CREATED, response_model=LiftResponse) # Abbiamo già impostato lo status code qualora andasse tutto bene. Questo è buona pratica, soprattutto quando è necessario utilizzare status code precisi. In questo caso abbiamo una chiamata POST, quindi che deve creare qualcosa. Se quel qualcosa è stato creato correttamente è bene specificarlo con lo status code 201
-def create_lift(
+def create_user_lift(
     user_id: int,
     lift: LiftModel,
     db: Session = Depends(get_db),
@@ -122,7 +122,7 @@ def create_lift(
     return new_lift
 
 @router.delete("/{lift_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_lift(
+def delete_user_lift(
     lift_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -140,7 +140,7 @@ def delete_lift(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @router.put("/{lift_id}", response_model=LiftResponse)
-def update_lift(
+def update_user_lift(
     lift_id: int,
     lift_infos: LiftModel,
     db: Session = Depends(get_db),
