@@ -32,11 +32,35 @@ class LiftType(str, Enum):
     bench = BENCH
     deadlift = DEADLIFT
 
+class RpeValue(float, Enum):
+    rpe_0 = 0
+    rpe_0_5 = 0.5
+    rpe_1 = 1
+    rpe_1_5 = 1.5
+    rpe_2 = 2
+    rpe_2_5 = 2.5
+    rpe_3 = 3
+    rpe_3_5 = 3.5
+    rpe_4 = 4
+    rpe_4_5 = 4.5
+    rpe_5 = 5
+    rpe_5_5 = 5.5
+    rpe_6 = 6
+    rpe_6_5 = 6.5
+    rpe_7 = 7
+    rpe_7_5 = 7.5
+    rpe_8 = 8
+    rpe_8_5 = 8.5
+    rpe_9 = 9
+    rpe_9_5 = 9.5
+    rpe_10 = 10
+
 # Modello pydantic per validare i dati che ci arrivano nella request (tendenzialmente POST o PUT)
 class LiftModel(BaseModel):
     weight: float
     lift_type: LiftType = Field(alias="liftType") # Utilizzando il type hinting con la classe LiftType automaticamente facciamo il check con pydantic dei valori accettati di dominio
-    body_weight: Optional[float] = Field(alias="bodyWeight", default=None)
+    rpe: Optional[RpeValue] = Field(default=None)
+    notes: Optional[str] = Field(default=None)
 
     # Necessario creare questa classe per poter leggere dall'alias
     class Config:
@@ -47,7 +71,8 @@ class LiftResponse(BaseModel):
     id: int
     user_id: int
     weight: float
-    body_weight: float | None
+    rpe: float | None
+    notes: str | None
     register_dt: date
     owner: UserResponse # Avendo aggiunto la relazione tra tabella utenti e quella dei pesi recuperiamo tutte le informazioni dell'utente a cui è assegnata l'alzata, e possiamo usare il modello pydantic che abbiamo creato per renderizzarlo in output
 
