@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime
-from datetime import datetime
 from sqlalchemy.sql import func
+
 from . import Base
 
 
