@@ -1,7 +1,6 @@
 from datetime import date
 from fastapi import APIRouter, status, Depends, Response, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import and_
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from enum import Enum
@@ -86,18 +85,37 @@ def get_user_lifts(
     user_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
+    # === Query parameters ===
     lift_type: Optional[LiftType] = None, # Con Optional[LiftType] diciamo a pydantic (che viene chiamato in automatico da FastAPI) che il parametro è opzionale (valore di default None), ma se viene passato deve utilizzare la classe LiftType per identificare i valori ammessi.
     # Inoltre, questo è un QUERY PARAMETER, identificato automaticamente da FastAPI, e il nome del parametro all'interno dell'URL deve essere esattamente quello del parametro
+    start_dt: Optional[date] = None,
+    end_dt: Optional[date] = None,
+    min_weight: Optional[float] = None,
+    max_weight: Optional[float] = None,
+    min_rpe: Optional[RpeValue] = None,
+    max_rpe: Optional[RpeValue] = None,
 ):
     check_user(user_id, current_user)
 
-    if lift_type is None:
-        lifts = db.query(Lift).filter(Lift.user_id == user_id).all()
-    else:
-        lifts = db.query(Lift).filter(and_(
-            Lift.user_id == user_id,
-            Lift.lift_type == lift_type,
-        )).all()
+    lift_query = db.query(Lift).filter(Lift.user_id == user_id)
+
+    # Filtro per i query parameters passati
+    if lift_type is not None:
+        lift_query = lift_query.filter(Lift.lift_type == lift_type)
+    if start_dt is not None:
+        lift_query = lift_query.filter(Lift.register_dt >= start_dt)
+    if end_dt is not None:
+        lift_query = lift_query.filter(Lift.register_dt <= end_dt)
+    if min_weight is not None:
+        lift_query = lift_query.filter(Lift.weight >= min_weight)
+    if max_weight is not None:
+        lift_query = lift_query.filter(Lift.weight <= max_weight)
+    if min_rpe is not None:
+        lift_query = lift_query.filter(Lift.rpe >= min_rpe)
+    if max_rpe is not None:
+        lift_query = lift_query.filter(Lift.rpe <= max_rpe)
+
+    lifts = lift_query.all()
 
     return lifts
 
