@@ -4,11 +4,13 @@ from pydantic import BaseModel
 from .models import Base
 from .models.lift import Lift
 from .models.user import User
+from .models.daily_metrics import DailyMetrics
 from .models import engine
 from .routers import (
     lifts,
     users,
     auth,
+    daily_metrics,
 )
 
 
@@ -21,3 +23,4 @@ app = FastAPI()
 app.include_router(users.router)
 app.include_router(lifts.router)
 app.include_router(auth.router)
+app.include_router(daily_metrics.router)
