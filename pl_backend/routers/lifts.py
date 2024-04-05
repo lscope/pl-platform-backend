@@ -1,7 +1,7 @@
 from datetime import date
 from fastapi import APIRouter, status, Depends, Response, HTTPException
 from sqlalchemy.orm import Session
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 from typing import List, Optional
 from enum import Enum
 
@@ -64,6 +64,13 @@ class LiftModel(BaseModel):
     # Necessario creare questa classe per poter leggere dall'alias
     class Config:
         allow_population_by_field_name = True
+
+    @validator("weight")
+    def check_min_weight(self, v):
+        if v < 20:
+            raise ValueError(f"Minimum weight is 20kg (empty barbell)")
+
+        return v
 
 # Modello pydantic per la response. Definiamo le informazioni che vanno nel body della response
 class LiftResponse(BaseModel):
