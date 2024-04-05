@@ -12,7 +12,7 @@ def hash_pwd(password: str) -> str:
     return pwd_context.hash(password)
 
 def verify_pwd(tentative_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(tentative_password, hashed_password)
+    return pwd_context.verify(tentative_password, hashed_password) # La tentative password viene hashata in automatico, non dobbiamo farlo noi
 
 def check_user(user_id: int, current_user: User):
     if user_id != current_user.id:
