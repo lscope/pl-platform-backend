@@ -59,7 +59,7 @@ class LiftModel(BaseModel):
     weight: float
     lift_type: LiftType = Field(alias="liftType") # Utilizzando il type hinting con la classe LiftType automaticamente facciamo il check con pydantic dei valori accettati di dominio
     rpe: Optional[RpeValue] = Field(default=None)
-    notes: Optional[str] = Field(default=None)
+    notes: Optional[str] = Field(default=None, max_digits=500)
 
     # Necessario creare questa classe per poter leggere dall'alias
     class Config:
