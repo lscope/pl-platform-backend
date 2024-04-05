@@ -40,7 +40,14 @@ class MetricsModel(BaseModel):
     @validator("*", pre=True, always=True)
     def check_at_least_one_field(self, v, values, **kwargs):
         if all(field is None for field in values.values()):
-            raise ValueError("Almeno un campo deve essere valido e non None")
+            raise ValueError("At least one value must be not None")
+
+        return v
+
+    @validator("body_weight", "calories", "hydration", "steps", "sleeping_hours")
+    def check_non_negative(self, v):
+        if v < 0:
+            raise ValueError(f"{v} is not a valid value, it must be >= 0")
 
         return v
 
@@ -65,8 +72,55 @@ def get_user_metrics(
     user_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
+    # Query parameters
+    start_dt: date = None,
+    end_dt: date = None,
+    min_body_weight: float = None,
+    max_body_weight: float = None,
+    min_calories: int = None,
+    max_calories: int = None,
+    min_hydration: float = None,
+    max_hydration: float = None,
+    min_steps: int = None,
+    max_steps: int = None,
+    min_sleeping_hours: float = None,
+    max_sleeping_hours: float = None,
+    sleeping_quality: SleepingQuality = None,
 ):
-    pass
+    check_user(user_id, current_user)
+
+    metrics_query = db.query(DailyMetrics).filter(DailyMetrics.user_id == user_id)
+
+    if start_dt is not None:
+        metrics_query = metrics_query.filter(DailyMetrics.register_dt >= start_dt)
+    if end_dt is not None:
+        metrics_query = metrics_query.filter(DailyMetrics.register_dt <= end_dt)
+    if min_body_weight is not None:
+        metrics_query = metrics_query.filter(DailyMetrics.body_weight >= min_body_weight)
+    if max_body_weight is not None:
+        metrics_query = metrics_query.filter(DailyMetrics.body_weight <= max_body_weight)
+    if min_calories is not None:
+        metrics_query = metrics_query.filter(DailyMetrics.calories >= min_calories)
+    if max_calories is not None:
+        metrics_query = metrics_query.filter(DailyMetrics.calories <= max_calories)
+    if min_hydration is not None:
+        metrics_query = metrics_query.filter(DailyMetrics.hydration >= min_hydration)
+    if max_hydration is not None:
+        metrics_query = metrics_query.filter(DailyMetrics.hydration <= max_hydration)
+    if min_steps is not None:
+        metrics_query = metrics_query.filter(DailyMetrics.steps >= min_steps)
+    if max_steps is not None:
+        metrics_query = metrics_query.filter(DailyMetrics.steps <= max_steps)
+    if min_sleeping_hours is not None:
+        metrics_query = metrics_query.filter(DailyMetrics.sleeping_hours >= min_sleeping_hours)
+    if max_sleeping_hours is not None:
+        metrics_query = metrics_query.filter(DailyMetrics.sleeping_hours <= max_sleeping_hours)
+    if sleeping_quality is not None:
+        metrics_query = metrics_query.filter(DailyMetrics.sleeping_quality == sleeping_quality)
+
+    daily_metrics = metrics_query.all()
+
+    return daily_metrics
 
 @router.post("/{user_id}", status_code=status.HTTP_201_CREATED, response_model=MetricsResponse)
 def create_user_metrics(
