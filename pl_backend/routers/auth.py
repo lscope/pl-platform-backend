@@ -18,7 +18,7 @@ router = APIRouter(
 def login_user(
     user_credentials: OAuth2PasswordRequestForm = Depends(), # L'utilizzo di OAuth2PasswordRequestForm effettua in automatico la ricezione delle credenziali, ma in un formato standard, ossia è un dizionario con due chiavi: "username" e "password". Poi nello username viene messa la mail, però dobbiamo ricordarci che dobbiamo usare la chiave username nella query a db per verificare la mail. Inoltre, il body della richiesta non deve essere sottoforma di json ma di form-data.
     db: Session = Depends(get_db),
-):
+) -> dict:
     user = db.query(User).filter(User.email == user_credentials.username).first() # first() perché tanto non ci possono essere mail duplicate, quindi prendiamo subito la prima e non sprechiamo risorse del db
 
     if user is None:

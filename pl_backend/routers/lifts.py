@@ -101,7 +101,7 @@ def get_user_lifts(
     max_weight: Optional[float] = None,
     min_rpe: Optional[RpeValue] = None,
     max_rpe: Optional[RpeValue] = None,
-):
+) -> Lift:
     check_user(user_id, current_user)
 
     lift_query = db.query(Lift).filter(Lift.user_id == user_id)
@@ -132,7 +132,7 @@ def create_user_lift(
     lift: LiftModel,
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user),
-): # Una chiamata POST avrà un body con i campi necessari. Per accedervi, FastAPI permette semplicemente di inserire il parametro (del nome che vogliamo - nel nostro caso `lift: LiftModel`) nella definizione della funzione, e specificando il modello pydantic ci viene già parsato con tutti i check, e siamo pronti ad utilizzarlo nella nostra funzione
+) -> Lift: # Una chiamata POST avrà un body con i campi necessari. Per accedervi, FastAPI permette semplicemente di inserire il parametro (del nome che vogliamo - nel nostro caso `lift: LiftModel`) nella definizione della funzione, e specificando il modello pydantic ci viene già parsato con tutti i check, e siamo pronti ad utilizzarlo nella nostra funzione
     check_user(user_id, current_user)
 
     new_lift = Lift(
@@ -151,7 +151,7 @@ def delete_user_lift(
     lift_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-):
+) -> Response:
     lift = db.query(Lift).filter(Lift.id == lift_id).first()
 
     if lift is not None:
@@ -170,7 +170,7 @@ def update_user_lift(
     lift_infos: LiftModel,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-):
+) -> Lift:
     lift_query = db.query(Lift).filter(Lift.id == lift_id)
     lift = lift_query.first()
 

@@ -86,7 +86,7 @@ def get_user_metrics(
     min_sleeping_hours: float = None,
     max_sleeping_hours: float = None,
     sleeping_quality: SleepingQuality = None,
-):
+) -> DailyMetrics:
     check_user(user_id, current_user)
 
     metrics_query = db.query(DailyMetrics).filter(DailyMetrics.user_id == user_id)
@@ -128,7 +128,7 @@ def create_user_metrics(
     metrics: MetricsModel,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-):
+) -> DailyMetrics:
     check_user(user_id, current_user)
 
     new_metrics = DailyMetrics(
@@ -147,7 +147,7 @@ def delete_user_metrics(
     metrics_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-):
+) -> Response:
     metrics = db.query(DailyMetrics).filter(DailyMetrics.id == metrics_id).first()
 
     if metrics is not None:
@@ -166,7 +166,7 @@ def update_user_metrics(
     metrics_data: MetricsModel,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-):
+) -> DailyMetrics:
     metrics_query = db.query(DailyMetrics).filter(DailyMetrics.id == metrics_id)
     metrics = metrics_query.first()
 
