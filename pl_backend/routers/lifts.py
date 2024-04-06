@@ -63,7 +63,7 @@ class LiftModel(BaseModel):
 
     # Necessario creare questa classe per poter leggere dall'alias
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
 
     @validator("weight")
     def check_min_weight(self, v):

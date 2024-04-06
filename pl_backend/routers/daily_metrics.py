@@ -35,7 +35,7 @@ class MetricsModel(BaseModel):
     sleeping_quality: Optional[SleepingQuality] = Field(default=None, alias="sleepingQuality")
 
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
 
     @validator("*", pre=True, always=True)
     def check_at_least_one_field(self, v, values, **kwargs):
