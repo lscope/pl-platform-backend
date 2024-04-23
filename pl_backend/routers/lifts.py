@@ -1,7 +1,7 @@
 from datetime import date
 from fastapi import APIRouter, status, Depends, Response, HTTPException
 from sqlalchemy.orm import Session
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional
 from enum import Enum
 
@@ -56,19 +56,19 @@ class RpeValue(float, Enum):
 
 # Modello pydantic per validare i dati che ci arrivano nella request (tendenzialmente POST o PUT)
 class LiftModel(BaseModel):
-    weight: float
+    weight: float = Field(ge=20)
     lift_type: LiftType = Field(alias="liftType") # Utilizzando il type hinting con la classe LiftType automaticamente facciamo il check con pydantic dei valori accettati di dominio
     rpe: Optional[RpeValue] = Field(default=None)
-    notes: Optional[str] = Field(default=None, max_digits=500)
+    notes: Optional[str] = Field(default=None)
 
     # Necessario creare questa classe per poter leggere dall'alias
     class Config:
         populate_by_name = True
 
-    @validator("weight")
-    def check_min_weight(self, v):
-        if v < 20:
-            raise ValueError(f"Minimum weight is 20kg (empty barbell)")
+    @field_validator("notes")
+    def check_length_notes(cls, v):
+        if len(v) > 500:
+            raise ValueError("Note too long, max 500 digits")
 
         return v
 

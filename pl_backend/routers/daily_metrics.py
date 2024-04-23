@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, status, HTTPException, Response
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, List
 from enum import Enum
 from sqlalchemy.orm import Session
@@ -27,27 +27,20 @@ class SleepingQuality(str, Enum):
     terrible = "terrible"
 
 class MetricsModel(BaseModel):
-    body_weight: Optional[float] = Field(default=None, alias="bodyWeight")
-    calories: Optional[int] = Field(default=None)
-    hydration: Optional[float] = Field(default=None)
-    steps: Optional[int] = Field(default=None)
-    sleeping_hours: Optional[float] = Field(default=None, alias="sleepingHours")
+    body_weight: Optional[float] = Field(default=None, alias="bodyWeight", ge=0)
+    calories: Optional[int] = Field(default=None, ge=0)
+    hydration: Optional[float] = Field(default=None, ge=0)
+    steps: Optional[int] = Field(default=None, ge=0)
+    sleeping_hours: Optional[float] = Field(default=None, alias="sleepingHours", ge=0)
     sleeping_quality: Optional[SleepingQuality] = Field(default=None, alias="sleepingQuality")
 
     class Config:
         populate_by_name = True
 
-    @validator("*", pre=True, always=True)
-    def check_at_least_one_field(self, v, values, **kwargs):
+    @field_validator("*")
+    def check_at_least_one_field(cls, v, values, **kwargs):
         if all(field is None for field in values.values()):
             raise ValueError("At least one value must be not None")
-
-        return v
-
-    @validator("body_weight", "calories", "hydration", "steps", "sleeping_hours")
-    def check_non_negative(self, v):
-        if v < 0:
-            raise ValueError(f"{v} is not a valid value, it must be >= 0")
 
         return v
 

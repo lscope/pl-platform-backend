@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status, Response, Depends
 from sqlalchemy.orm import Session
-from pydantic import BaseModel, EmailStr, validator
+from pydantic import BaseModel, EmailStr, field_validator, Field
 from datetime import datetime
 import re
 
@@ -17,12 +17,10 @@ router = APIRouter(
 
 class UserModel(BaseModel):
     email: EmailStr # Il tipo EmailStr controlla in automatico se è una email valida
-    password: str
+    password: str = Field(ge=8, le=50)
 
-    @validator("password")
-    def password_strength(self, v):
-        if len(v) < 8:
-            raise ValueError("Password should be at least 8 characters")
+    @field_validator("password")
+    def password_strength(cls, v): # Ricordiamoci di mettere come primo parametro cls e non self, in quanto @field_validator lavora sui metodi di classe, non di istanza
         if not re.search("[a-z]", v):
             raise ValueError("Password should have at least one lowercase letter")
         if not re.search("[A-Z]", v):
