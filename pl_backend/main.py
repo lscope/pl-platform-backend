@@ -1,10 +1,7 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
 from .models import Base
-from .models.lift import Lift
-from .models.user import User
-from .models.daily_metrics import DailyMetrics
 from .models import engine
 from .routers import (
     lifts,
@@ -20,6 +17,18 @@ from .routers import (
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    # Accetto chiamate da tutte queste origin
+    allow_origins=[
+        "http://localhost:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(users.router)
 app.include_router(lifts.router)
 app.include_router(auth.router)
