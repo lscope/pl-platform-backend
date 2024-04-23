@@ -17,10 +17,12 @@ router = APIRouter(
 
 class UserModel(BaseModel):
     email: EmailStr # Il tipo EmailStr controlla in automatico se è una email valida
-    password: str = Field(ge=8, le=50)
+    password: str
 
     @field_validator("password")
     def password_strength(cls, v): # Ricordiamoci di mettere come primo parametro cls e non self, in quanto @field_validator lavora sui metodi di classe, non di istanza
+        if len(v) < 8 or len(v) > 50:
+            raise ValueError("Invalid password length. It must be between 8 and 50")
         if not re.search("[a-z]", v):
             raise ValueError("Password should have at least one lowercase letter")
         if not re.search("[A-Z]", v):
