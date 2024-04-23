@@ -1,6 +1,6 @@
-from fastapi import APIRouter, status, Response, Depends
+from fastapi import APIRouter, status, Response, Depends, HTTPException
 from sqlalchemy.orm import Session
-from pydantic import BaseModel, EmailStr, field_validator, Field
+from pydantic import BaseModel, EmailStr, field_validator
 from datetime import datetime
 import re
 
@@ -63,6 +63,12 @@ def create_user(
     # Nel DB non salviamo la pwd in chiaro, come ci è stata passata, ma la hashamo. Il vantaggio è che l'hash è in una sola direzione. Quindi una volta che la password è stata hashata non possiamo più recuperare il valore orginale. Per fare il check quindi se la pw è corretta in fase di login andare a vedere il codice che gestisce il login
     hashed_password = hash_pwd(user.password)
     user.password = hashed_password
+
+    # Controllo se già esiste un utente con quella mail
+    check_user = db.query(User).filter(User.email == user.email).first()
+
+    if check_user is not None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
 
     new_user = User(**user.model_dump())
 
