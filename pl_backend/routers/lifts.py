@@ -75,11 +75,10 @@ class LiftModel(BaseModel):
 # Modello pydantic per la response. Definiamo le informazioni che vanno nel body della response
 class LiftResponse(BaseModel):
     id: int
-    user_id: int = Field(alias="userId")
     weight: float
     rpe: float | None
     notes: str | None
-    register_dt: date = Field(alias="registerDt")
+    register_dt: date
     user: UserResponse # Avendo aggiunto la relazione tra tabella utenti e quella dei pesi recuperiamo tutte le informazioni dell'utente a cui è assegnata l'alzata, e possiamo usare il modello pydantic che abbiamo creato per renderizzarlo in output
 
     # necessario creare questa classe per specificare che l'oggetto è un oggetto ORM (letto direttamente da DB)
